@@ -1,0 +1,45 @@
+@import 'https://fonts.googleapis.com/css?family=Dosis:400,600,800';
+@import 'https://fonts.googleapis.com/css?family=Noto+Sans';
+
+* {
+  box-sizing: border-box;
+  color: #666;
+}
+
+body{
+  /*font-family: 'Dosis' , sans-serif;*/
+  font-family: 'Noto Sans', sans-serif;
+  padding: 0;
+  margin: 0;
+}
+/*listas*/
+
+ul,
+li {
+  list-style: none;
+}
+a,
+img {
+  text-decoration:none;
+  outline:none;
+}
+
+a,
+img,
+p,
+h1,
+h2,
+h3,
+ul,
+li,
+dl,
+dt,
+dd,
+section,
+header,
+article,
+footer {
+  display: block;
+  padding: 0;
+  margin: 0;
+}

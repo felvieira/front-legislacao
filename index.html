@@ -1,0 +1,335 @@
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+  <link rel="stylesheet" href="styles/reset.css">
+  <link rel="stylesheet" href="styles/grid.css">
+  <link rel="stylesheet" href="styles/bootstrap.min.css">
+  <!-- <link rel="stylesheet" href="styles/bootstrap-theme.min.css"> -->
+  <!-- <link rel="stylesheet" href="libs/font-awesome/css/font-awesome.css"> -->
+
+  <title>Index</title>
+  <style media="screen">
+
+  .loading {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background-color: white;
+    position: fixed;
+    padding-top: calc(20% - 30px);
+  }
+
+  div#containerTable {
+    display: block;
+    margin: 0 auto;
+    position: relative;
+    background: white;
+    padding: 2%;
+    float: none;
+  }
+
+  table#leiDetalhesContainer tr {
+    border: 1px solid #ddd;
+    /* padding: 10px; */
+    text-align: center;
+  }
+
+  table#leiDetalhesContainer tr th {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+  }
+
+  table#leiDetalhesContainer tr td {
+    padding: 10px;
+  }
+
+  a.btn.linkDetalhe2 {
+    margin: 0 auto;
+    display: block;
+    float: none;
+    width: 120px;
+    text-decoration: none;
+  }
+
+  .loading img {width: 100%;margin: 0 auto;max-width: 200px;}
+
+  .loading span {
+      text-align: center;
+      font-size: x-large;
+      display: block;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: #dadada;
+  }
+
+  button#pesquisar-go {
+    /* margin-top: 25px; */
+    margin: 25px auto;
+    display: block;
+    position: relative;
+    float: none;
+}
+
+.box-form.box-form-alert {
+    padding-bottom: 15px;
+}
+
+  </style>
+</head>
+<body>
+  <div class="box-size-100 box-container">
+    <div class="box-size-100">
+      <div class="box-form box-form-alert">
+        <form id="consulta-go" target="resultDivContainer">
+
+          <label class="box-size-80">
+            <span>Termos</span>
+            <input type="text" name="texto"  id="buscatermos">
+          </label>
+          <!-- <label class="box-size-25">
+            <span>Número:</span>
+            <input type="text" name="WebNumero" id="buscanumero">
+          </label>
+          <label class="box-size-25">
+            <span>Ano:</span>
+            <input type="text" name="WebAno" id="buscaano">
+          </label>
+          <label class="box-size-25">
+            <span>Data: </span>
+            <input type="text" name="WebData" id="buscadata">
+          </label> -->
+          <div class="box-size-20 no-padding">
+            <!-- onclick="submitform();" -->
+            <button type="button" id="pesquisar-go" class="btn btn-info">Procurar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="box-size-100">
+      <div id="containerTable" class="box-size-90">
+        <table id="resultDivContainer" class="table table-hover table-bordered">
+        </table>
+        <div id="page-selection"></div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <!-- <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button> -->
+            <h4 class="modal-title" style="text-align: center;">Detalhe Da BUSCA</h4>
+          </div>
+          <div class="modal-body">
+            <table id="leiDetalhesContainer" class="table table-striped table-bordered">
+
+            </table>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+            <button type="button" class="btn btn-primary">Baixar em PDF</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="loading" style="display:none;">
+    <img src="img/loader.gif">
+    <span>Carregando ...</span>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <!-- Mustache template library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/2.2.1/mustache.min.js"></script>
+
+
+  <script>
+
+  // var linkapi = "http://legislacaobr.herokuapp.com/rules";
+  // var linkdetalhe = "http://legislacaobr.herokuapp.com/details";
+  // var linkpaginacao = "http://legislacaobr.herokuapp.com/get_page";
+
+  var linkapi = "https://legislacao-api.herokuapp.com/rules";
+  var linkdetalhe = "https://legislacao-api.herokuapp.com/details";
+  var linkpaginacao = "https://legislacao-api.herokuapp.com/get_page";
+
+  $(document).ready(function() {
+
+    $(document).ajaxStart(function() {
+      $(".loading").show();
+    });
+
+    $(document).ajaxStop(function() {
+      $(".loading").hide();
+    });
+
+
+
+    // Variaveis rules
+    // "identif":"\nLEI 11.705/2008",
+    // "data":"\n19/06/2008",
+    // "situacao":"\nN├âO CONSTA REVOGA├ç├âO EXPRESSA",
+    // "ementa":
+
+    //     // 'WebTipoPesquisa': 512,
+    //     // 'WebTipo': "TODOS",
+    //     // 'WebDocs': "TODOS",
+    //     // 'Surrogate_WebTipoPesquisa': 1,
+    //     // 'Surrogate_WebTipo': 1,
+    //     // '__Click': 0,
+
+    $("#pesquisar-go").on('click', () => {
+      $('#resultDivContainer').empty();
+
+
+      var x = $("#buscatermos").val();
+      var formulario = {
+        text: x,
+
+      };
+
+      $.ajax({
+        type: "POST",
+        url: linkapi,
+        // contentType: "application/json;charset=utf-8",
+        dataType:"json",
+        processData: true,
+        data : formulario,
+        success: function(data){
+
+          template = document.getElementById('resultDivContainer').innerHTML;
+
+          rules = Mustache.render('{{#rules}}<tr><td>{{identif}}</td><td>{{data}}</td><td>{{situacao}}</td><td>{{ementa}}</td><td><a href="" class="btn linkDetalhe" data-link="{{detalhes}}">Abrir</a></td></tr>{{/rules}}', data);
+          $('#resultDivContainer').html("<thead> <tr> <th>Identificação</th> <th>Data</th> <th>Situação</th> <th>Ementa</th> <th>Abrir a Lei</th> </tr> </thead>" + rules );
+
+          pages = Mustache.render('{{#pages}}<a href="" class="btn linkPaginas" data-link="{{link}}">Página {{text}}</a>{{/pages}}', data);
+          $('#page-selection').html("<div class='paginacao-container'>" + pages  + "</div>" );
+
+          $(".paginacao-container a").text(function () {
+            return $(this).text().replace("Página próximo...", "Próxima Página...");
+          });
+
+
+
+          var cliquepage;
+          (function ($) {
+
+            cliquepage = function() {
+
+              $('.linkPaginas').click(function() {
+
+
+                var link = $(this).data('link');
+                var paginalink = { page: link};
+
+                $.ajax({
+                  type: "POST",
+                  url: linkpaginacao,
+                  // contentType: "json;charset=utf-8",
+                  dataType:"json",
+                  processData: true,
+                  data : paginalink ,
+                  success: function(data){
+
+                    $('#resultDivContainer').empty()
+
+                    rules = Mustache.render('{{#rules}}<tr><td>{{identif}}</td><td>{{data}}</td><td>{{situacao}}</td><td>{{ementa}}</td><td><a href="" class="btn linkDetalhe" data-link="{{detalhes}}">Abrir</a></td></tr>{{/rules}}', data);
+                    $('#resultDivContainer').html("<thead> <tr> <th>Identificação</th> <th>Data</th> <th>Situação</th> <th>Ementa</th> <th>Abrir a Lei</th> </tr> </thead>" + rules );
+
+                    pages = Mustache.render('{{#pages}}<a href="" class="btn linkPaginas" data-link="{{link}}">Página {{text}}</a>{{/pages}}', data);
+                    $('#page-selection').html("<div class='paginacao-container'>" + pages  + "</div>" );
+
+                    $(".paginacao-container a").text(function () {
+                      return $(this).text().replace("Página próximo...", "Próxima Página...");
+                    });
+
+                    cliquepage();
+
+                    cliquedetalhe();
+
+                  },
+                  error: function(){
+                    console.log("Deu ruim detalhes");
+                  },
+                });
+                return false;
+              });
+
+            }
+          })(jQuery);
+          cliquepage();
+
+
+          var cliquedetalhe;
+          (function ($) {
+
+            cliquedetalhe = function() {
+
+              $('.linkDetalhe').click(function() {
+
+                var link = $(this).data('link');
+                var parlink = { url: link};
+
+                $.ajax({
+                  type: "POST",
+                  url: linkdetalhe,
+                  // contentType: "json;charset=utf-8",
+                  dataType:"json",
+                  processData: true,
+                  data : parlink,
+                  success: function(data){
+
+                    function showModal(data){
+                      $("#myModal").find(".modal-body table#leiDetalhesContainer").html(data);
+                      $("#myModal").modal();
+                    }
+
+                    var template = `<tr><th>Ementa</th><td>{{ementa}}</td></tr>
+                    <tr><th>Chefe</th><td>{{chefe_do_governo}}</td></tr>
+                    <tr><th>Origem</th><td>{{origem}}</td></tr>
+                    <tr><th>Fonte</th><td>{{fonte}}</td></tr>
+                    <tr><th>Link</th><td><a href="{{link}}" class="btn linkDetalhe2" target="_blank" data-link="">Abrir</a></td></tr>
+                    <tr><th>Referenda</th><td>{{referenda}}</td></tr>
+                    <tr><th>Alteração</th><td>{{alteracao}}</td></tr>
+                    <tr><th>Correlação</th><td>{{correlacao}}</td></tr>
+                    <tr><th>Interpretação</th><td>{{interpretacao}}</td></tr>
+                    <tr><th>Veto</th><td>{{veto}}</td></tr>
+                    <tr><th>Assunto</th><td>{{assunto}}</td></tr>
+                    <tr><th>Classificação de Direito</th><td>{{classificacao_de_direito}}</td></tr>
+                    <tr><th>Observação</th><td>{{observacao}}</td></tr>
+
+                    `
+                    modaldetalhes = Mustache.render(template, data);
+
+                    showModal(modaldetalhes);
+
+                  },
+                  error: function(){
+                    console.log("Deu ruim detalhes");
+                  },
+                });
+                return false;
+              });
+            }
+          })(jQuery);
+          cliquedetalhe();
+
+
+        },
+
+      });
+
+    });
+  });
+
+  </script>
+
+</body>
+
+</html>
